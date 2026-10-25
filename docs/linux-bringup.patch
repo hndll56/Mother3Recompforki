@@ -1,0 +1,109 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 5238aa1..59d5c39 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -188,4 +188,4 @@ add_gba_variant(Mother3Recomp mother3 19893 "Mother3Recomp"
+     "MOTHER 3 (JPN)" "4f0f493e12c2a8c61b2d809af03f7abf87a85776" 0x42AC9CB9)
+ 
+ add_gba_variant(Mother3RecompEN mother3en 19894 "Mother3Recomp (EN)"
+-    "MOTHER 3 (EN)" "306FB8874533B0FD0796208FAA8BED2DB4AE77FB" 0x8A3BC5A8)
++    "MOTHER 3 (EN)" "B15C0C741AB00B42AE9B97E0942CF8E0697C0694" 0xEDE46930)
+diff --git a/src/main.cpp b/src/main.cpp
+index 7eb26cb..a233319 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -23,10 +23,13 @@
+ 
+ #include "runtime.h"
+ #include "runtime_arm.h"
+-#include "emerald_extended_view.h"
+ 
++// Emerald-only hooks are compiled out for MOTHER 3 (their symbols do not exist in its generated code).
++#ifdef GBARECOMP_EMERALD
++#include "emerald_extended_view.h"
+ extern "C" void gf_ReadFlash1(void);
+ extern "C" void gf_ReadFlash_Core(void);
++#endif
+ 
+ #ifndef GBARECOMP_BUILTIN_NAME
+ #define GBARECOMP_BUILTIN_NAME "GBA cartridge"
+@@ -53,6 +56,7 @@ extern "C" void gf_ReadFlash_Core(void);
+ 
+ namespace {
+ 
++#ifdef GBARECOMP_EMERALD
+ bool ram_matches_rom(uint32_t ram_pc, uint32_t rom_pc, uint32_t size) {
+     for (uint32_t offset = 0; offset < size; ++offset) {
+         if (bus_read_u8(ram_pc + offset) != bus_read_u8(rom_pc + offset)) {
+@@ -85,6 +89,8 @@ int emerald_ram_dispatch(uint32_t pc, int thumb) {
+     return 0;
+ }
+ 
++#endif  // GBARECOMP_EMERALD
++
+ void print_usage() {
+     std::printf(
+         "%s [--bios <path>] [--rom <path>] [game.toml]\n"
+@@ -109,7 +115,9 @@ int main(int argc, char** argv) {
+         }
+     }
+ 
++#ifdef GBARECOMP_EMERALD
+     g_runtime_ram_dispatch_hook = &emerald_ram_dispatch;
++#endif
+ 
+     // Built-in defaults so a standalone <Variant>Recomp.exe ships without
+     // a sibling game.toml. The asset picker still validates against these
+@@ -122,6 +130,7 @@ int main(int argc, char** argv) {
+     // CRC32 of the pinned ROM (same dump the SHA-1 gates on); the
+     // launcher's GAME card uses it for its "ROM verified" check.
+     opts.builtin_rom_crc32 = GBARECOMP_BUILTIN_CRC32;
++#ifdef GBARECOMP_EMERALD
+     opts.mod_game_id       = "pokemon-emerald-us";
+     opts.mod_owns_adaptive_view = true;
+     opts.max_view_width = emerald::kMaxViewWidth;
+@@ -131,6 +140,7 @@ int main(int argc, char** argv) {
+     opts.freely_resizable_window = true;
+     opts.extended_view_init = emerald::install_extended_view;
+     opts.extended_view_frame = emerald::update_extended_view;
++#endif
+     opts.launcher_expose_widescreen = false;
+     opts.launcher_expose_adaptive_view = false;
+     opts.launcher_region   = (sizeof(GBARECOMP_BUILTIN_REGION) > 1)
+diff --git a/variants/mother3en/config/mother3en_en.toml b/variants/mother3en/config/mother3en_en.toml
+index 5a21eab..4dc171b 100644
+--- a/variants/mother3en/config/mother3en_en.toml
++++ b/variants/mother3en/config/mother3en_en.toml
+@@ -8,7 +8,7 @@
+ # SHA-1 is the EN-patched ROM, the same hash CMake builds in.
+ 
+ [rom]
+-sha1 = "306FB8874533B0FD0796208FAA8BED2DB4AE77FB"
++sha1 = "B15C0C741AB00B42AE9B97E0942CF8E0697C0694"
+ 
+ [save]
+ type = "flash512"   # 64 KB; matches ../game.toml. See the CHECK note there.
+diff --git a/variants/mother3en/game.toml b/variants/mother3en/game.toml
+index e784c49..767a952 100644
+--- a/variants/mother3en/game.toml
++++ b/variants/mother3en/game.toml
+@@ -46,7 +46,7 @@ codegen_shards = 128             # CHECK — Emerald uses 64 for a 16 MB ROM;
+ static_resume_all = true
+ 
+ [identity]
+-sha1 = "306FB8874533B0FD0796208FAA8BED2DB4AE77FB"   # EN-patched ROM (not the decomp's JP hash)
++sha1 = "B15C0C741AB00B42AE9B97E0942CF8E0697C0694"   # EN-patched ROM (not the decomp's JP hash)
+ 
+ [recompiler]
+ entry_point   = "0x08000000"
+diff --git a/variants/mother3en/symbols/mother3_jpn.toml b/variants/mother3en/symbols/mother3_jpn.toml
+index 8ea53a2..ba9f07e 100644
+--- a/variants/mother3en/symbols/mother3_jpn.toml
++++ b/variants/mother3en/symbols/mother3_jpn.toml
+@@ -13,5 +13,5 @@
+ # overlay's addresses are only meaningful for the exact ROM
+ # the decomp reproduced, so a mismatch is a hard error.
+ [identity]
+-sha1 = "306FB8874533B0FD0796208FAA8BED2DB4AE77FB"
++sha1 = "B15C0C741AB00B42AE9B97E0942CF8E0697C0694"
+ # rom size = 0x02000000

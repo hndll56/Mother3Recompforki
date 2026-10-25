@@ -13,5 +13,5 @@
 # overlay's addresses are only meaningful for the exact ROM
 # the decomp reproduced, so a mismatch is a hard error.
 [identity]
-sha1 = "306FB8874533B0FD0796208FAA8BED2DB4AE77FB"
+sha1 = "B15C0C741AB00B42AE9B97E0942CF8E0697C0694"
 # rom size = 0x02000000

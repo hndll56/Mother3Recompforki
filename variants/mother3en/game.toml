@@ -46,7 +46,7 @@ codegen_shards = 128             # CHECK — Emerald uses 64 for a 16 MB ROM;
 static_resume_all = true
 
 [identity]
-sha1 = "306FB8874533B0FD0796208FAA8BED2DB4AE77FB"   # EN-patched ROM (not the decomp's JP hash)
+sha1 = "B15C0C741AB00B42AE9B97E0942CF8E0697C0694"   # EN-patched ROM (not the decomp's JP hash)
 
 [recompiler]
 entry_point   = "0x08000000"

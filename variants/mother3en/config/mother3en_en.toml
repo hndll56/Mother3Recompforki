@@ -8,7 +8,7 @@
 # SHA-1 is the EN-patched ROM, the same hash CMake builds in.
 
 [rom]
-sha1 = "306FB8874533B0FD0796208FAA8BED2DB4AE77FB"
+sha1 = "B15C0C741AB00B42AE9B97E0942CF8E0697C0694"
 
 [save]
 type = "flash512"   # 64 KB; matches ../game.toml. See the CHECK note there.

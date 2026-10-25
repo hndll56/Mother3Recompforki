@@ -23,10 +23,13 @@
 
 #include "runtime.h"
 #include "runtime_arm.h"
-#include "emerald_extended_view.h"
 
+// Emerald-only hooks are compiled out for MOTHER 3 (their symbols do not exist in its generated code).
+#ifdef GBARECOMP_EMERALD
+#include "emerald_extended_view.h"
 extern "C" void gf_ReadFlash1(void);
 extern "C" void gf_ReadFlash_Core(void);
+#endif
 
 #ifndef GBARECOMP_BUILTIN_NAME
 #define GBARECOMP_BUILTIN_NAME "GBA cartridge"
@@ -53,6 +56,7 @@ extern "C" void gf_ReadFlash_Core(void);
 
 namespace {
 
+#ifdef GBARECOMP_EMERALD
 bool ram_matches_rom(uint32_t ram_pc, uint32_t rom_pc, uint32_t size) {
     for (uint32_t offset = 0; offset < size; ++offset) {
         if (bus_read_u8(ram_pc + offset) != bus_read_u8(rom_pc + offset)) {
@@ -85,6 +89,8 @@ int emerald_ram_dispatch(uint32_t pc, int thumb) {
     return 0;
 }
 
+#endif  // GBARECOMP_EMERALD
+
 void print_usage() {
     std::printf(
         "%s [--bios <path>] [--rom <path>] [game.toml]\n"
@@ -109,7 +115,9 @@ int main(int argc, char** argv) {
         }
     }
 
+#ifdef GBARECOMP_EMERALD
     g_runtime_ram_dispatch_hook = &emerald_ram_dispatch;
+#endif
 
     // Built-in defaults so a standalone <Variant>Recomp.exe ships without
     // a sibling game.toml. The asset picker still validates against these
@@ -122,6 +130,7 @@ int main(int argc, char** argv) {
     // CRC32 of the pinned ROM (same dump the SHA-1 gates on); the
     // launcher's GAME card uses it for its "ROM verified" check.
     opts.builtin_rom_crc32 = GBARECOMP_BUILTIN_CRC32;
+#ifdef GBARECOMP_EMERALD
     opts.mod_game_id       = "pokemon-emerald-us";
     opts.mod_owns_adaptive_view = true;
     opts.max_view_width = emerald::kMaxViewWidth;
@@ -131,6 +140,7 @@ int main(int argc, char** argv) {
     opts.freely_resizable_window = true;
     opts.extended_view_init = emerald::install_extended_view;
     opts.extended_view_frame = emerald::update_extended_view;
+#endif
     opts.launcher_expose_widescreen = false;
     opts.launcher_expose_adaptive_view = false;
     opts.launcher_region   = (sizeof(GBARECOMP_BUILTIN_REGION) > 1)
