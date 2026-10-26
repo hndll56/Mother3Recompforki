@@ -158,3 +158,20 @@ note = "IWRAM-resident copy of SoundMainRAM"
 start = 0x08000004
 end   = 0x080000C0
 note  = "cartridge header (logo, title, checksums)"
+
+# ── Trusted native mod seams (see src/mods/mother3_rates_plugin.cpp) ──
+# Monster::experience() / Monster::money() getters, and seed_rng (trace only).
+[[mod_function_hook]]
+addr = 0x080816B8
+mode = "thumb"
+note = "Monster::experience getter — EXP rate mod"
+
+[[mod_function_hook]]
+addr = 0x080816C4
+mode = "thumb"
+note = "Monster::money getter — DP rate mod"
+
+[[mod_function_hook]]
+addr = 0x080008E0
+mode = "thumb"
+note = "seed_rng — hook-trace self-test"

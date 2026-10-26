@@ -1,0 +1,33 @@
+diff --git a/src/runtime/runtime.cpp b/src/runtime/runtime.cpp
+index ed18b6b..d831d2d 100644
+--- a/src/runtime/runtime.cpp
++++ b/src/runtime/runtime.cpp
+@@ -33,6 +33,7 @@
+ #include "runtime_arm.h"
+ #include "runtime_bus_bridge.h"
+ #include "save_config.h"
++#include "rom_ips.h"
+ #include "self_heal.h"
+ #include "overlay_loader.h"
+ #include "../gba/mod_audio.h"
+@@ -1344,6 +1345,20 @@ int run_game(int argc, char** argv, const RunOptions& opts) {
+         return 1;
+     }
+ 
++    // Optional data-mod overlay (GBARECOMP_ROM_PATCH=<file.ips>); applied only
++    // after the stock ROM hash above has verified, so the gate still guards the base.
++    if (const char* ips_path = std::getenv("GBARECOMP_ROM_PATCH"); ips_path && *ips_path) {
++        std::vector<uint8_t> ips;
++        size_t records = 0;
++        if (!read_file(ips_path, &ips, &err) || !rom_ips_apply(rom, ips, &records, &err)) {
++            std::fprintf(stderr, "[gbarecomp:runtime] ROM patch %s rejected: %s\n",
++                         ips_path, err.c_str());
++            return 1;
++        }
++        std::fprintf(stderr, "[gbarecomp:runtime] rom_patch applied=%s records=%zu\n",
++                     ips_path, records);
++    }
++
+     if (!args.quiet) {
+         std::printf("bios_loaded sha1=%s size=%zu\n",
+                     bios.sha1_hex().c_str(), gba::GbaBios::kSize);

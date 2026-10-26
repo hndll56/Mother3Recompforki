@@ -59,7 +59,7 @@ function(add_gba_variant TARGET NAME PORT WIN_TITLE GAME_NAME ROM_SHA1 ROM_CRC32
         "${VARIANT_DIR}/generated/*.c"
         "${VARIANT_DIR}/generated/*.cpp")
 
-    set(VARIANT_GAME_SOURCES src/main.cpp)
+    set(VARIANT_GAME_SOURCES src/main.cpp src/mods/mother3_rates_plugin.cpp)
     if(GBARECOMP_ENABLE_MODS)
         list(APPEND VARIANT_GAME_SOURCES
             src/emerald_extended_view.cpp
